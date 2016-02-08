@@ -30,7 +30,7 @@
 # API breaking version
 METAMAKE_MAJOR_VERSION  := 1
 # Bug fix version within the API
-METAMAKE_MINOR_VERSION  := 0
+METAMAKE_MINOR_VERSION  := 1
 
 
 # ------------------------------------------------------------ BUILD CONSTRUCTS
@@ -528,7 +528,7 @@ define EVAL_EXPORT_SHALLOW_DEPS
   $(ARCH)DEPS_CF_$(1)       := $$(value LDEP_CF_)
   $(ARCH)DEPS_CXXF_$(1)     := $$(value LDEP_CXXF_)
 
-  $(ARCH)DEPS_BUILD_$(1)    := $$(value DEPS_BUILD_)
+  $(ARCH)DEPS_BUILD_$(1)    := $$(value DEPS_BUILD_) $$(LDEP_BUILD_)
   $(ARCH)DEPS_LINK_$(1)     := $$(value LDEP_LINK_)
 
   ifneq ($(LIBS_BASENAME),)
