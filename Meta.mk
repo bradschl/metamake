@@ -18,6 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# --------------------------------------------------------------- DOCUMENTATION
+# See README.md for documentation, or the github project page
+# https://github.com/bradschl/metamake
+
+
 # ------------------------------------------------------------- MAKEFILE TWEAKS
 # Disable implicit rules
 .SUFFIXES:
@@ -25,6 +30,7 @@
 # Enable secondary expansion for recipe dependency variables that may not
 # be defined at the time that the meta rules are expanded
 .SECONDEXPANSION:
+
 
 # ------------------------------------------------------------------ VERSIONING
 # API breaking version
@@ -34,7 +40,6 @@ METAMAKE_MINOR_VERSION  := 1
 
 
 # ------------------------------------------------------------ BUILD CONSTRUCTS
-# See README.md for documentation
 
 # $(1) - Architecture - variable name
 # $(2) - Build directory
@@ -265,7 +270,6 @@ define EVAL_BEGIN_ARCH_BUILD
   LDEP_LF_              :=
   LDEP_LL_              :=
   LDEP_LINK_            :=
-  LDEP_BUILD_           :=
 
   # Local (hidden) flags
   $$(eval $$(EVAL_CLEAR_LOCAL_PARAMS))
@@ -315,7 +319,6 @@ define EVAL_END_ARCH_BUILD
   LDEP_LF_              :=
   LDEP_LL_              :=
   LDEP_LINK_            :=
-  LDEP_BUILD_           :=
 
   # Local (hidden) flags
   $$(eval $$(EVAL_CLEAR_LOCAL_PARAMS))
@@ -464,7 +467,7 @@ $(2)_CC_CMD             = \
     -MMD -MP -MT '$(2)' -MF '$(2).d' \
     -o $$@ -c $$<
 
-$(2): $(1) $$(value DEPS_BUILD_) $$(value LDEP_BUILD_)
+$(2): $(1) $$(value DEPS_BUILD_)
 	$$(MAKE_DIRECTORY)
 	@echo "CC $(1) --> $(2)"
 	$$(Q)$$($(2)_CC_CMD)
@@ -485,7 +488,7 @@ $(2)_CXX_CMD            = \
     -MMD -MP -MT '$(2)' -MF '$(2).d' \
     -o $$@ -c $$<
 
-$(2): $(1) $$(value DEPS_BUILD_) $$(value LDEP_BUILD_)
+$(2): $(1) $$(value DEPS_BUILD_)
 	$$(MAKE_DIRECTORY)
 	@echo "CXX $(1) --> $$@"
 	$$(Q)$$($(2)_CXX_CMD)
@@ -500,7 +503,7 @@ define EVAL_ASM_RULE
 OBJS                    := $$(OBJS) $(2)
 LAST_TARGET_            := $$(LAST_TARGET_) $(2)
 
-$(2): $(1) $$(value DEPS_BUILD_) $$(value LDEP_BUILD_)
+$(2): $(1) $$(value DEPS_BUILD_)
 	$$(MAKE_DIRECTORY)
 	@echo "AS $(1) --> $$@"
 	$$(Q)$(AS) -g -o $$@ -c $$<
@@ -514,7 +517,7 @@ LDEP_LINK_              := $$(value LDEP_LINK_) $(2)
 LIBS_BASENAME           := $$(LIBS_BASENAME) $(1)
 LAST_TARGET_            := $(2)
 
-$(2): $(OBJS) $$(value DEPS_BUILD_) $$(value LDEP_BUILD_)
+$(2): $(OBJS) $$(value DEPS_BUILD_)
 	$$(MAKE_DIRECTORY)
 	@echo "AR $(OBJS) --> $$@"
 	$$(Q)$(AR) -r $$@ $(OBJS)
@@ -528,7 +531,7 @@ define EVAL_EXPORT_SHALLOW_DEPS
   $(ARCH)DEPS_CF_$(1)       := $$(value LDEP_CF_)
   $(ARCH)DEPS_CXXF_$(1)     := $$(value LDEP_CXXF_)
 
-  $(ARCH)DEPS_BUILD_$(1)    := $$(value DEPS_BUILD_) $$(LDEP_BUILD_)
+  $(ARCH)DEPS_BUILD_$(1)    := $$(value DEPS_BUILD_)
   $(ARCH)DEPS_LINK_$(1)     := $$(value LDEP_LINK_)
 
   ifneq ($(LIBS_BASENAME),)
@@ -623,7 +626,7 @@ endef
 
 # $(1) - Custom build step dependencies
 define EVAL_ADD_CUSTOM_BUILD_DEP
-  LDEP_BUILD_           := $$(value LDEP_BUILD_) $(1)
+  DEPS_BUILD_           := $$(value DEPS_BUILD_) $(1)
 endef
 
 # $(1) - Custom link step dependencies
@@ -640,6 +643,7 @@ endef
 
 
 # -------------------------------------------------------------- INTERNAL RULES
+
 
 # $(1) - Dependency name to check for
 define EVAL_CHECK_IS_EXPORTED
