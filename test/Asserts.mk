@@ -43,3 +43,9 @@ define M_EVAL_ASSERT_CONTAINS
 endef
 
 
+# $(1) Object name
+M_GET_CXX_BUILD_CMD         = $(strip $(1))_CXX_CMD
+
+# $(1) Target name
+M_GET_CXX_LINK_CMD          = $(strip $(1))_CXX_LINK_CMD
+
