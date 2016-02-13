@@ -467,7 +467,9 @@ $(2)_CC_CMD             = \
     -MMD -MP -MT '$(2)' -MF '$(2).d' \
     -o $$@ -c $$<
 
-$(2): $(1) $$(value DEPS_BUILD_)
+_M_BUILD_DEP_$(2)       = $(value DEPS_BUILD_)
+
+$(2): $(1) $$(_M_BUILD_DEP_$(2))
 	$$(MAKE_DIRECTORY)
 	@echo "CC $(1) --> $(2)"
 	$$(Q)$$($(2)_CC_CMD)
@@ -488,7 +490,9 @@ $(2)_CXX_CMD            = \
     -MMD -MP -MT '$(2)' -MF '$(2).d' \
     -o $$@ -c $$<
 
-$(2): $(1) $$(value DEPS_BUILD_)
+_M_BUILD_DEP_$(2)       = $(value DEPS_BUILD_)
+
+$(2): $(1) $$(_M_BUILD_DEP_$(2))
 	$$(MAKE_DIRECTORY)
 	@echo "CXX $(1) --> $$@"
 	$$(Q)$$($(2)_CXX_CMD)
@@ -503,7 +507,9 @@ define EVAL_ASM_RULE
 OBJS                    := $$(OBJS) $(2)
 LAST_TARGET_            := $$(LAST_TARGET_) $(2)
 
-$(2): $(1) $$(value DEPS_BUILD_)
+_M_BUILD_DEP_$(2)       = $(value DEPS_BUILD_)
+
+$(2): $(1) $$(_M_BUILD_DEP_$(2))
 	$$(MAKE_DIRECTORY)
 	@echo "AS $(1) --> $$@"
 	$$(Q)$(AS) -g -o $$@ -c $$<
@@ -517,7 +523,9 @@ LDEP_LINK_              := $$(value LDEP_LINK_) $(2)
 LIBS_BASENAME           := $$(LIBS_BASENAME) $(1)
 LAST_TARGET_            := $(2)
 
-$(2): $(OBJS) $$(value DEPS_BUILD_)
+_M_BUILD_DEP_$(2)       = $(value DEPS_BUILD_)
+
+$(2): $(OBJS) $$(_M_BUILD_DEP_$(2))
 	$$(MAKE_DIRECTORY)
 	@echo "AR $(OBJS) --> $$@"
 	$$(Q)$(AR) -r $$@ $(OBJS)
@@ -654,8 +662,8 @@ endef
 define EVAL_COMPARE_IMPORT_EXPORT_LIST
   $$(foreach dep,$$(IMPORTED_DEP_NAMES_),$$(eval $$(call EVAL_CHECK_IS_EXPORTED,$$(dep))))
 endef
-# This checks that all IMPORT_DEPS were eventually matched with an 
-# EXPORT_SHALLOW_DEPS 
+# This checks that all IMPORT_DEPS were eventually matched with an
+# EXPORT_SHALLOW_DEPS
 .PHONY: METAMAKE_CHECK_EXPORT_LIST
 METAMAKE_CHECK_EXPORT_LIST: $$(eval $$(EVAL_COMPARE_IMPORT_EXPORT_LIST)) ;
 
