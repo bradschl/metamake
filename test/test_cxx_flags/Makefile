@@ -125,9 +125,9 @@ endef
 
 
 
-$(TRACE_targetExec): $$(eval $$(M_cxx_link_has_arch_flags))
-define M_cxx_link_has_arch_flags
-  $(info Running M_cxx_link_has_arch_flags...)
+$(TRACE_targetExec): $$(eval $$(M_TEST_cxx_link_has_arch_flags))
+define M_TEST_cxx_link_has_arch_flags
+  $(info Running M_TEST_cxx_link_has_arch_flags...)
 
   # Target info
   TARGET_NAME           := $$@
@@ -141,12 +141,12 @@ define M_cxx_link_has_arch_flags
   $$(call M_ASSERT_CONTAINS,    M_ARCH_lf,              $$(TARGET_BUILD_CMD))
   $$(call M_ASSERT_CONTAINS,    M_ARCH_ll,              $$(TARGET_BUILD_CMD))
 
-  $$(info ...Finished M_cxx_link_has_arch_flags)
+  $$(info ...Finished M_TEST_cxx_link_has_arch_flags)
 endef
 
-$(TRACE_targetExec): $$(eval $$(M_cxx_link_has_local_flags))
-define M_cxx_link_has_local_flags
-  $(info Running M_cxx_link_has_local_flags...)
+$(TRACE_targetExec): $$(eval $$(M_TEST_cxx_link_has_local_flags))
+define M_TEST_cxx_link_has_local_flags
+  $(info Running M_TEST_cxx_link_has_local_flags...)
 
   # Target info
   TARGET_NAME           := $$@
@@ -159,12 +159,12 @@ define M_cxx_link_has_local_flags
   $$(call M_ASSERT_CONTAINS,    LOCAL_lf,               $$(TARGET_BUILD_CMD))
   $$(call M_ASSERT_CONTAINS,    LOCAL_ll,               $$(TARGET_BUILD_CMD))
 
-  $$(info ...Finished M_cxx_link_has_local_flags)
+  $$(info ...Finished M_TEST_cxx_link_has_local_flags)
 endef
 
-$(TRACE_targetExec): $$(eval $$(M_cxx_link_has_hidden_flags))
-define M_cxx_link_has_hidden_flags
-  $(info Running M_cxx_link_has_hidden_flags...)
+$(TRACE_targetExec): $$(eval $$(M_TESY_cxx_link_has_hidden_flags))
+define M_TESY_cxx_link_has_hidden_flags
+  $(info Running M_TESY_cxx_link_has_hidden_flags...)
 
   # Target info
   TARGET_NAME           := $$@
@@ -177,7 +177,7 @@ define M_cxx_link_has_hidden_flags
   $$(call M_ASSERT_CONTAINS,    HIDDEN_lf,              $$(TARGET_BUILD_CMD))
   $$(call M_ASSERT_CONTAINS,    HIDDEN_ll,              $$(TARGET_BUILD_CMD))
 
-  $$(info ...Finished M_cxx_link_has_hidden_flags)
+  $$(info ...Finished M_TESY_cxx_link_has_hidden_flags)
 endef
 
 

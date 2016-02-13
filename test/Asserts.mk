@@ -43,6 +43,15 @@ define M_EVAL_ASSERT_CONTAINS
 endef
 
 
+# Assert $(1) is not contained within $(2)
+M_ASSERT_CONTAINS_N = $(eval $(call M_EVAL_ASSERT_CONTAINS_N,$(strip $(1)),$(strip $(2))))
+define M_EVAL_ASSERT_CONTAINS_N
+  ifneq ($$(filter $(1),$(2)),)
+    $$($(LEVEL) M_ASSERT_CONTAINS_N failed, "$(1)" is contained in "$(2)")
+  endif
+endef
+
+
 # $(1) Object name
 M_GET_CXX_BUILD_CMD         = $(strip $(1))_CXX_CMD
 
