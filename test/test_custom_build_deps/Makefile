@@ -53,9 +53,6 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
   $(call BUILD_SOURCE,          TRACE_1_targetSrc.cpp)
   $(call APPEND_TARGET_TO_VAR,  TRACE_1_targetObj) # Trace source build step
 
-  # $(call MAKE_LIRARY,           TRACE_1_library)
-  # $(call APPEND_TARGET_TO_VAR,  TRACE_1_targetLib) # Trace library build step
-
   $(call EXPORT_SHALLOW_DEPS,   TRACE_1_targetDep)
 $(call END_ARCH_BUILD)
 
@@ -65,9 +62,6 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
 
   $(call BUILD_SOURCE,          TRACE_2_targetSrc.cpp)
   $(call APPEND_TARGET_TO_VAR,  TRACE_2_targetObj) # Trace source build step
-
-  # $(call MAKE_LIRARY,           TRACE_2_library)
-  # $(call APPEND_TARGET_TO_VAR,  TRACE_2_targetLib) # Trace library build step
 
   $(call EXPORT_SHALLOW_DEPS,   TRACE_2_targetDep)
 $(call END_ARCH_BUILD)
@@ -83,9 +77,6 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
 
   $(call BUILD_SOURCE,          TRACE_3_targetSrc.cpp)
   $(call APPEND_TARGET_TO_VAR,  TRACE_3_targetObj) # Trace source build step
-
-  # $(call CXX_LINK,              TRACE_3_exec)
-  # $(call APPEND_TARGET_TO_VAR,  TRACE_3_targetExec) # Target executable build step
 $(call END_ARCH_BUILD)
 
 .PHONY: TRACE_4_targetSrc.cpp
@@ -94,9 +85,6 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
 
   $(call BUILD_SOURCE,          TRACE_4_targetSrc.cpp)
   $(call APPEND_TARGET_TO_VAR,  TRACE_4_targetObj) # Trace source build step
-
-  # $(call CXX_LINK,              TRACE_4_exec)
-  # $(call APPEND_TARGET_TO_VAR,  TRACE_4_targetExec) # Target executable build step
 $(call END_ARCH_BUILD)
 
 
