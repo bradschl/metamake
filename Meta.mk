@@ -36,7 +36,7 @@
 # API breaking version
 METAMAKE_MAJOR_VERSION  := 2
 # Bug fix version within the API
-METAMAKE_MINOR_VERSION  := 0
+METAMAKE_MINOR_VERSION  := 1
 
 
 # ------------------------------------------------------------ BUILD CONSTRUCTS
@@ -456,9 +456,9 @@ $(BIN_DIR)/$(1)_CC_LINK_CMD  = \
     $$($(ARCH)LL) $(LL) $(DEPS_LL_) $(LDEP_LL_)
 
 $(BIN_DIR)/$(1): $(OBJS) $$(value DEPS_LINK_) $$(value LDEP_LINK_)
-    $$(MAKE_DIRECTORY)
-    @echo "CC LINK $$@"
-    $$(Q)$$($(BIN_DIR)/$(1)_CC_LINK_CMD)
+	$$(MAKE_DIRECTORY)
+	@echo "CC LINK $$@"
+	$$(Q)$$($(BIN_DIR)/$(1)_CC_LINK_CMD)
 endef
 
 
