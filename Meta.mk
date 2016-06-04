@@ -34,9 +34,9 @@
 
 # ------------------------------------------------------------------ VERSIONING
 # API breaking version
-METAMAKE_MAJOR_VERSION  := 1
+METAMAKE_MAJOR_VERSION  := 2
 # Bug fix version within the API
-METAMAKE_MINOR_VERSION  := 2
+METAMAKE_MINOR_VERSION  := 0
 
 
 # ------------------------------------------------------------ BUILD CONSTRUCTS
@@ -157,7 +157,7 @@ GET_ARCH_PREFIX         = $(strip \
     $($(strip $(1))_PREFIX))
 
 # (1) - Directory to search
-FIND_SOURCE_IN_DIR      = $(shell find $(strip $(1)) -name "*.cpp" -or -name "*.cc" -or -name "*.c" -or -name "*.S")
+FIND_SOURCE_IN_DIR      = $(shell find $(strip $(1)) -name "*.cpp" -or -name "*.cc" -or -name "*.c" -or -name "*.S" -or -name "*.s")
 
 
 # --------------------------------------------------------- INTERNAL META RULES
@@ -166,7 +166,8 @@ FIND_SOURCE_IN_DIR      = $(shell find $(strip $(1)) -name "*.cpp" -or -name "*.
 C_SRC_TO_OBJ            = $(strip $(patsubst %.c,$(OBJ_DIR)/%.o,$(1)))
 CPP_SRC_TO_OBJ          = $(strip $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(1)))
 CC_SRC_TO_OBJ           = $(strip $(patsubst %.cc,$(OBJ_DIR)/%.o,$(1)))
-S_SRC_TO_OBJ            = $(strip $(patsubst %.S,$(OBJ_DIR)/%.o,$(1)))
+ASM_S_SRC_TO_OBJ        = $(strip $(patsubst %.S,$(OBJ_DIR)/%.o,$(1)))
+ASM_s_SRC_TO_OBJ        = $(strip $(patsubst %.s,$(OBJ_DIR)/%.o,$(1)))
 
 # $(1) - library base name
 LIBNAME_TO_LIBA         = $(strip $(LIB_DIR)/lib$(strip $(1)).a)
@@ -414,7 +415,12 @@ define EVAL_BUILD_SOURCE
 
   _SRC_                 := $$(filter %.S,$(1))
   ifneq ($$(_SRC_),)
-    $$(foreach f,$$(_SRC_),$$(eval $$(call EVAL_ASM_RULE,$$(f),$$(call S_SRC_TO_OBJ,$$(f)))))
+    $$(foreach f,$$(_SRC_),$$(eval $$(call EVAL_ASM_RULE,$$(f),$$(call ASM_S_SRC_TO_OBJ,$$(f)))))
+  endif
+
+  _SRC_                 := $$(filter %.s,$(1))
+  ifneq ($$(_SRC_),)
+    $$(foreach f,$$(_SRC_),$$(eval $$(call EVAL_ASM_RULE,$$(f),$$(call ASM_s_SRC_TO_OBJ,$$(f)))))
   endif
 
   _SRC_                 :=
@@ -494,7 +500,7 @@ _M_BUILD_DEP_$(2)       = $(value DEPS_BUILD_)
 
 $(2): $(1) $$(_M_BUILD_DEP_$(2))
 	$$(MAKE_DIRECTORY)
-	@echo "CXX $(1) --> $$@"
+	@echo "CXX $(1) --> $(2)"
 	$$(Q)$$($(2)_CXX_CMD)
 
 -include $(2).d
@@ -507,12 +513,16 @@ define EVAL_ASM_RULE
 OBJS                    := $$(OBJS) $(2)
 LAST_TARGET_            := $$(LAST_TARGET_) $(2)
 
+$(2)_ASM_CMD            = \
+    $(CC) $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
+    -o $$@ -c $$<
+
 _M_BUILD_DEP_$(2)       = $(value DEPS_BUILD_)
 
 $(2): $(1) $$(_M_BUILD_DEP_$(2))
 	$$(MAKE_DIRECTORY)
-	@echo "AS $(1) --> $$@"
-	$$(Q)$(AS) -g -o $$@ -c $$<
+	@echo "AS $(1) --> $(2)"
+	$$(Q)$$($(2)_ASM_CMD)
 endef
 
 
