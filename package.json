@@ -1,0 +1,14 @@
+{
+  "name": "metamake",
+  "version": "2.1",
+  "repo": "bradschl/metamake",
+  "description": "Makefile fragment for multi-configuration builds",
+  "keywords": [
+    "Makefile",
+    "build"
+  ],
+  "license": "MIT",
+  "src": [
+    "Meta.mk"
+  ]
+}
