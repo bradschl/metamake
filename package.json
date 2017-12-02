@@ -1,6 +1,6 @@
 {
   "name": "metamake",
-  "version": "2.1",
+  "version": "3.0",
   "repo": "bradschl/metamake",
   "description": "Makefile fragment for multi-configuration builds",
   "keywords": [
