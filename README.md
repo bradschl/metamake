@@ -1,6 +1,11 @@
 # metaMake
 metaMake is a GNU Make makefile fragment that allows for building multiple architectures in parallel with human friendly dependency tracking between target objects.
 
+High-level steps for writing a Makefile with metaMake rules:
+1. Add in the "all" and "clean" targets. Optionally configure the verbosity of the build
+2. Define the architectures
+3. Build artifacts
+
 ## Build Philosophy
 
 #### What does this project do:
@@ -25,34 +30,14 @@ Also, be careful mixing tabs and spaces inside the makefiles. Only recipes can u
 
 
 ## Recommended File Layout
-It is recommended to use a non-recursive make fragment system. In this setup, there is a top level `Makefile` that includes rule fragments. Each library or executable in the build system should be nested in a directory with a `Rules.mk` file. The `Rules.mk` file specifies the rules and recipes required to build that library or executable.
+For the majority of projects, everything can be put in a single `Makefile`.
 
-For small projects, rule fragments are not needed, everything can be put in a single `Makefile`.
+If the project is large, or a build hierarchy is needed, then it is recommended to use a non-recursive make fragment system. In this setup, there is a top level `Makefile` that includes rule fragments. Each library or executable in the build system should be nested in a directory with a `Rules.mk` file. The `Rules.mk` file specifies the rules and recipes required to build that library or executable.
 
 See the Example project for a look at how the top level `Makefile` and `Rules.mk` can be setup. The fragment system is inspired by [this non-recursive makefile solution](http://evbergen.home.xs4all.nl/nonrecursive-make.html).
 
 
 ## Meta-Rules Setup
-
-#### Quiet and Verbose Output
-Defining ```Q = @``` in the top level `Makefile` will set the output to quiet. Defining ``` Q = ``` will set the output to verbose.
-
-The following fragment is useful to have in the top level makefile if you want the optionally turn verbose mode on or off.
-```Makefile
-ifeq ("$(origin V)", "command line")
-  ENABLE_VERBOSE        = $(V)
-endif
-ifndef ENABLE_VERBOSE
-  ENABLE_VERBOSE        = 0
-endif
-
-ifeq ($(ENABLE_VERBOSE),1)
-  Q                     =
-else
-  Q                     = @
-endif
-```
-Calling `make V=0` or `make V=1` with the above fragment will enable or disable verbose output.
 
 #### The "all" and "clean" Targets
 The meta rules append to two variables, ```ALL_TARGETS``` and ```CLEAN_TARGETS```. The ```ALL_TARGETS``` variable contains a list of real targets (physical files) that should be build by the ```all``` rule. The ```CLEAN_TARGETS``` variable contains a list of phony targets (target that are not files) that should be used as a prerequisite for a ```clean``` target. The following fragment is useful to have in the top level makefile.
@@ -116,44 +101,56 @@ include Meta.mk
 
 ```
 
+#### Quiet and Verbose Output
+Defining ```Q = @``` in the top level `Makefile` will set the output to quiet. Defining ``` Q = ``` will set the output to verbose.
 
-#### Architecture Setup
-This meta rules defines the compiler prefix and flags that must be used when building for a specified architecture. This section must appear before any meta recipe for this architecture!
+The following fragment is useful to have in the top level makefile if you want the optionally turn verbose mode on or off.
+```Makefile
+ifeq ("$(origin V)", "command line")
+  ENABLE_VERBOSE        = $(V)
+endif
+ifndef ENABLE_VERBOSE
+  ENABLE_VERBOSE        = 0
+endif
+
+ifeq ($(ENABLE_VERBOSE),1)
+  Q                     =
+else
+  Q                     = @
+endif
+```
+Calling `make V=0` or `make V=1` with the above fragment will enable or disable verbose output.
+
+
+## Architecture Setup
+This meta rules defines the compiler prefix and flags that must be used when building for a specified architecture. This section must appear before any meta recipe for the architecture!
 The first parameter of the ```BEGIN_DEFINE_ARCH``` is the architecture name; in this example it is ```MY_ARCH```. The second parameter is the build output directory, where all objects, libraries, and binaries are created; in this example it is ```build/my_arch```.
 ```Makefile
 $(call BEGIN_DEFINE_ARCH,  MY_ARCH,  build/my_arch)
-  PREFIX        :=  Compiler prefix
-  CF            :=  % C Flags
-  CXXF          :=  % C++ Flags
-  LF            :=  % Linker flags
-  LL            :=  % Linker last flags
+  PREFIX        :=  # Compiler prefix
+  ASF           :=  # Assembler flags
+  CF            :=  # C Flags
+  CXXF          :=  # C++ Flags
+  LF            :=  # Linker flags
+  LL            :=  # Linker last flags
 $(call END_DEFINE_ARCH)
 ```
-- The CF, CXXF, LF, and LL flags are global flags applied to all meta recipes for the given architecture. These may be appended later with ```BEGIN_APPEND_ARCH_FLAGS``` and ```END_APPEND_ARCH_FLAGS```
-- The CF and CXXF flags are both used for C++ recipes
+- The ASF, CF, CXXF, LF, and LL flags are global flags applied to all meta recipes for the given architecture. These may be appended later with ```BEGIN_APPEND_ARCH_FLAGS``` and ```END_APPEND_ARCH_FLAGS```
 
 Below is an example for defining a host (X86) build and ARM build architecture:
 ```Makefile
 $(call BEGIN_DEFINE_ARCH,  ARM_CM4,   build/arm_cm4)
   PREFIX        := arm-none-eabi-
-  CF            := -O2 -g3 -Wall -fmessage-length=0 \
-                   -ffunction-sections -fdata-sections -fno-builtin \
-                   -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 \
-                   -mfloat-abi=softfp \
-                   -mthumb -fsingle-precision-constant -DCORE_M4
-  CXXF          := -std=c++11 -fno-exceptions -fno-rtti
-  LF            :=
-  LL            :=
+  ASF           := -mcpu=cortex-m4 -mthumb -DCORE_M4
+  CF            := -Os -g3 -Wall -mcpu=cortex-m4 -mthumb -DCORE_M4 \
+                   -std=c99
+  CXXF          := -Os -g3 -Wall -mcpu=cortex-m4 -mthumb -DCORE_M4 \
+                   -std=c++14 -fno-exceptions -fno-rtti
 $(call END_DEFINE_ARCH)
 
 $(call BEGIN_DEFINE_ARCH,  HOST,      build/host)
-  PREFIX        :=
-  CF            := -O0 -g3 -Wall -fmessage-length=0 \
-                   -ffunction-sections -fdata-sections \
-                   -fsingle-precision-constant
-  CXXF          := -std=c++11 -fno-rtti
-  LF            :=
-  LL            :=
+  CF            := -O0 -g3 -Wall -std=c99
+  CXXF          := -O0 -g3 -Wall -std=c++14
 $(call END_DEFINE_ARCH)
 ```
 
@@ -161,13 +158,14 @@ $(call END_DEFINE_ARCH)
 Using this section will append flags for all recipes in the given architecture. This section may appear at any time during the build, since architecture flags are not applied until the build steps are executed.
 ```Makefile
 $(call BEGIN_APPEND_ARCH_FLAGS,  MY_ARCH)
-  CF            :=  % C Flags
-  CXXF          :=  % C++ Flags
-  LF            :=  % Linker flags
-  LL            :=  % Linker last flags
+  ASF           :=  # Assembler flags
+  CF            :=  # C Flags
+  CXXF          :=  # C++ Flags
+  LF            :=  # Linker flags
+  LL            :=  # Linker last flags
 $(call END_APPEND_ARCH_FLAGS)
 ```
-Note that the CF and CXXF flags are both used for C++ recipes
+
 
 ## Building Artifacts
 A build for a specific architecture can be created using the ```BEGIN_ARCH_BUILD``` and ```END_ARCH_BUILD``` calls. The ```BEGIN_ARCH_BUILD``` call takes one parameter, the architecture that is being built for.
@@ -192,12 +190,14 @@ $(call END_UNIVERSAL_BUILD)
 All architectures must be defined before using this construct
 
 #### Adding Includes
-Include paths can be added inside of the meta build constructs with ```ADD_C_INCLUDE```, ```ADD_CXX_INCLUDE```, and ```ADD_SYSTEM_INCLUDE```
+Include paths can be added inside of the meta build constructs with ```ADD_AS_INCLUDE```, ```ADD_C_INCLUDE```, and ```ADD_CXX_INCLUDE```
+- ```ADD_AS_INCLUDE``` will append a list of include paths onto the assembler build flags
 - ```ADD_C_INCLUDE``` will append a list of include paths onto the C build flags
 - ```ADD_CXX_INCLUDE``` will append a list of include paths onto the C++ build flags
-- ```ADD_SYSTEM_INCLUDE``` can be used for abominations such as google-test and google-mock. This will add an system include path onto the C build flags
 
 All of the above constructs take a list of paths as their only argument. The include paths added with these constructs are exportable, see the [Exporting Build Dependencies](#exporting-build-dependencies) and [Importing Build Dependencies](#importing-build-dependencies) sections for more info on that.
+
+Currently, C include paths are treated as a subset of C++ include paths. If a path is added using the ```ADD_C_INCLUDE```, it will be visible to C++ code as well. However, include paths added with ```ADD_CXX_INCLUDE``` will not be visible to C code, for obvious reasons.
 
 ```Makefile
 $(call BEGIN_UNIVERSAL_BUILD)
@@ -206,8 +206,6 @@ $(call BEGIN_UNIVERSAL_BUILD)
   # ... #
 $(call END_UNIVERSAL_BUILD)
 ```
-
-Currently, C include paths are treated as a subset of C++ include paths. If a path is added using the ```ADD_C_INCLUDE```, it will be visible to C++ code as well. However, include paths added with ```ADD_CXX_INCLUDE``` will not be visible to C code, for obvious reasons.
 
 #### Building Source
 Source files can be built with a single call to ```BUILD_SOURCE```. This construct will take a list of source files as its only parameter. Currently, the following types of files are compatible:
@@ -229,14 +227,16 @@ $(call END_UNIVERSAL_BUILD)
 
 #### Build Flags
 There are several constructs for adding build flags the the meta build constructs.
+- ```ADD_ASF_FLAG``` will append to the assembler build flags
 - ```ADD_CF_FLAG``` will append to the C build flags
 - ```ADD_CXXF_FLAG``` will append to the C++ build flags
 - ```ADD_LF_FLAG``` will append the first linker flags
 - ```ADD_LL_FLAG``` will append the last linker flags
 
-All of the above constructs take a list of flags as their first parameter. The LL and LF flags are only used for linking steps. The CF and CXXF flags are used both linking and source build steps. Currently, C flags are treated as a subset of C++ flags.
+All of the above constructs take a list of flags as their first parameter. The LL and LF flags are only used for linking steps. The CF and CXXF flags are used both for linking and source build steps.
 
 Flags added with the above constructs are _exportable_ flags. Hidden flags are supported as well by defining the following variables within the build construct.
+- ASF for hidden assembler build flags
 - CF for hidden C build flags
 - CXXF for hidden C++ build flags
 - LF for hidden first linker flags
@@ -295,7 +295,7 @@ $(call END_ARCH_BUILD)
 The ```APPEND_ALL_TARGET_VAR``` call will add the output executable to the ```ALL_TARGETS``` variable, causing it to be a high-level build target. See [Adding Artifacts to the All Target List](#adding-artifacts-to-the-all-target-list).
 
 #### Importing and Exporting Build Construct Dependencies
-This is the raison d'etre for this entire project. These constructs allow for small pieces of code to be built into small libraries and pulled into other build constructs with minimal effort.
+This was the initial raison d'etre for the metaMake project. These constructs allow for small pieces of code to be built into small libraries and pulled into other build constructs with minimal effort.
 ```Makefile
 $(call BEGIN_UNIVERSAL_BUILD)
   $(call ADD_CXX_INCLUDE,       libfoo/include)
@@ -353,7 +353,7 @@ $(call END_ARCH_BUILD)
 $(OUTPUT_ELF_NAME:%.elf=%.hex): $(OUTPUT_ELF_NAME)
 	$(call GET_ARCH_PREFIX, ARM_CM4)objcopy -O ihex $< $@
 ```
-This example gets the complete filename of the linking step output, and uses it to generate a hex file using the objdump tool.
+This example gets the complete filename of the linking step output, and uses it to generate a hex file using the objcopy tool.
 
 Custom build dependencies can be added with the ```ADD_CUSTOM_BUILD_DEP``` call. The first parameter of this call takes a list of real or phony target names (not to be confused with the human friendly dependency names used in the other build constructs). Build dependencies will block any ```BUILD_SOURCE``` calls from running until the build dependency has been satisfied. A build dependency is special in that it is the ONLY dependency information that is exported recursively. Most of the time this is used to block the building of source until headers are moved into pace. Use this with caution.
 
@@ -366,7 +366,7 @@ Similar to the ```ADD_CUSTOM_BUILD_DEP``` call, ```ADD_CUSTOM_LINK_DEP``` will a
 The ```FIND_SOURCE_IN_DIR``` call can be used to recursively find source in a directory. This call takes a directory as its first parameter. It will search for the following types of files:
 - .c for C source
 - .cpp and .cc for C++ source
-- .S for Assembly source
+- .s or .S for Assembly source
 
 It is recommended to use a simply expanded variable for this call, else it will cause additional overhead (use ```:=``` instead of ```=```)
 ```Makefile
@@ -407,14 +407,14 @@ $(call END_UNIVERSAL_BUILD)
 This can be useful as well for unit testing code which expects to build against platform specific code. In most cases, it is fine to expose just the headers to the code under test to get it to compile.
 ```Makefile
 $(call BEGIN_ARCH_BUILD, ARM_CM4)
-  $(call ADD_CXX_INCLUDE,     $(d)/include)
+  $(call ADD_C_INCLUDE,       $(d)/include)
   $(call BUILD_SOURCE,        $(STM32F4_DRIVERS_SRC))
   $(call MAKE_LIRARY,         stm32f4_drivers)
   $(call EXPORT_SHALLOW_DEPS, stm32f4_drivers)
 $(call END_ARCH_BUILD)
 
 $(call BEGIN_UNIVERSAL_BUILD)
-  $(call ADD_CXX_INCLUDE,     $(d)/include)
+  $(call ADD_C_INCLUDE,       $(d)/include)
   $(call EXPORT_SHALLOW_DEPS, stm32f4_drivers)
 $(call END_UNIVERSAL_BUILD)
 ```
@@ -501,7 +501,7 @@ The ```ADD_CUSTOM_LINK_DEP``` will cause recipes that import ````extlib``` to de
 Version information for this project can be found in the variables ```METAMAKE_MAJOR_VERSION``` and ```METAMAKE_MINOR_VERSION```. The major version will increment every time backwards compatibility in the metaMake API is broken. The minor number should increment between behavior changes within the API.
 
 ## Work in Progress
-Things that are still in development (in order of implementation)
+Things that are still in development
 - [ ] Examples
 - [ ] Documentation
 - [ ] Cleanup the variable names in the meta-rules
@@ -509,34 +509,32 @@ Things that are still in development (in order of implementation)
 - [ ] Parameter sanity checks on all call and eval meta rules
 - [ ] Add settings to disable pretty messages in the meta rules
 
+
 ## Bugs and Limitations
 
 #### Universal Build Rule Limitation
-Currently, the universal build rules should **NOT** be used for anything that does not export dependencies, else the build rule will not get expanded. This is currently a limitation that allows for universal builds to be mixed with architecture specific builds. This behavior may change in the future.
-
-#### C Flags as a Subset of CXX Flags
-C flags are currently used as a subset of C++ flags. This behavior may be changed in the future.
+Currently, the universal build rules must **NOT** be used for anything that does not export dependencies, else the build rule will not get expanded. This is currently a limitation that allows for universal builds to be mixed with architecture specific builds. This behavior may change in the future.
 
 #### Shallow Dependency Limitations
 Currently, there is only shallow dependency exporting, which is mostly due to recursive dependency resolution being a very complex problem to solve using Makefile meta rules.
 ```Makefile
 $(call BEGIN_UNIVERSAL_BUILD)
-  $(call ADD_CXX_INCLUDE,     	mylib_1/include)
-  $(call BUILD_SOURCE,        	$(MY_LIB_1_SRC))
-  $(call MAKE_LIRARY,         	mylib_1)
-  $(call EXPORT_SHALLOW_DEPS, 	mylib_1)
+  $(call ADD_CXX_INCLUDE,       mylib_1/include)
+  $(call BUILD_SOURCE,          $(MY_LIB_1_SRC))
+  $(call MAKE_LIRARY,           mylib_1)
+  $(call EXPORT_SHALLOW_DEPS,   mylib_1)
 $(call END_UNIVERSAL_BUILD)
 
 $(call BEGIN_UNIVERSAL_BUILD)
-  $(call IMPORT_DEPS, 		  	mylib_1)
-  $(call ADD_CXX_INCLUDE,     	mylib_2/include)
-  $(call BUILD_SOURCE,        	$(MY_LIB_2_SRC))
-  $(call MAKE_LIRARY,         	mylib_2)
-  $(call EXPORT_SHALLOW_DEPS, 	mylib_2)
+  $(call IMPORT_DEPS,           mylib_1)
+  $(call ADD_CXX_INCLUDE,       mylib_2/include)
+  $(call BUILD_SOURCE,          $(MY_LIB_2_SRC))
+  $(call MAKE_LIRARY,           mylib_2)
+  $(call EXPORT_SHALLOW_DEPS,   mylib_2)
 $(call END_UNIVERSAL_BUILD)
 
 $(call BEGIN_ARCH_BUILD,        HOST)
-  $(call IMPORT_DEPS, 			mylib_2)
+  $(call IMPORT_DEPS,           mylib_2)
   $(call ADD_CXX_INCLUDE,       application/include)
   $(call BUILD_SOURCE,          main.cpp)
   $(call CXX_LINK,              application)
