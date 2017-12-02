@@ -51,9 +51,17 @@ define M_EVAL_ASSERT_CONTAINS_N
   endif
 endef
 
+# $(1) Object name
+M_GET_AS_BUILD_CMD          = $(strip $(1))_ASM_CMD
+
+# $(1) Object name
+M_GET_CC_BUILD_CMD          = $(strip $(1))_CC_CMD
 
 # $(1) Object name
 M_GET_CXX_BUILD_CMD         = $(strip $(1))_CXX_CMD
+
+# $(1) Target name
+M_GET_CC_LINK_CMD           = $(strip $(1))_CC_LINK_CMD
 
 # $(1) Target name
 M_GET_CXX_LINK_CMD          = $(strip $(1))_CXX_LINK_CMD
