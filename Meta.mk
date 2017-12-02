@@ -58,6 +58,11 @@ BEGIN_UNIVERSAL_BUILD   = $(eval $(EVAL_BEGIN_UNIVERSAL_BUILD))
 END_UNIVERSAL_BUILD     = $(eval $(EVAL_END_UNIVERSAL_BUILD))
 
 
+# $(1) - Flags
+ADD_AS_INCLUDE         = \
+    $(eval BUILD_CMD_ := $$(value BUILD_CMD_) \
+                         $$$$(eval $$$$(call EVAL_ADD_AS_INCLUDE,$$$$(strip $$(1)))))
+
 # $(1) - Includes (paths)
 ADD_C_INCLUDE           = \
     $(eval BUILD_CMD_ := $$(value BUILD_CMD_) \
@@ -68,10 +73,10 @@ ADD_CXX_INCLUDE         = \
     $(eval BUILD_CMD_ := $$(value BUILD_CMD_) \
                          $$$$(eval $$$$(call EVAL_ADD_CXX_INCLUDE,$$$$(strip $$(1)))))
 
-# $(1) - Includes (paths)
-ADD_SYSTEM_INCLUDE      = \
+# $(1) - Flags
+ADD_ASF_FLAG           = \
     $(eval BUILD_CMD_ := $$(value BUILD_CMD_) \
-                         $$$$(eval $$$$(call EVAL_ADD_SYS_INCLUDE,$$$$(strip $$(1)))))
+                         $$$$(eval $$$$(call EVAL_ADD_ASF_FLAG,$$$$(strip $$(1)))))
 
 # $(1) - Flags
 ADD_CF_FLAG             = \
@@ -176,7 +181,8 @@ LIBNAME_TO_LIBA         = $(strip $(LIB_DIR)/lib$(strip $(1)).a)
 MAKE_DIRECTORY 	        = @mkdir -p $(@D)
 
 # (none)
-CALL_PUSH_LOCAL_PARAMS_ = $$(eval CF := $(CF)) \
+CALL_PUSH_LOCAL_PARAMS_ = $$(eval ASF := $(ASF)) \
+                          $$(eval CF := $(CF)) \
                           $$(eval CXXF := $(CXXF)) \
                           $$(eval LF := $(LF)) \
                           $$(eval LL := $(LL))
@@ -184,6 +190,7 @@ CALL_PUSH_LOCAL_PARAMS_ = $$(eval CF := $(CF)) \
 
 # (none)
 define EVAL_CLEAR_LOCAL_PARAMS
+  ASF                   :=
   CF                    :=
   CXXF                  :=
   LF                    :=
@@ -215,8 +222,10 @@ define EVAL_BEGIN_DEFINE_ARCH
 endef
 
 
+# (none)
 define EVAL_END_DEFINE_ARCH
   $(ARCH_)_PREFIX       := $(PREFIX)
+  $(ARCH_)ASF           := $($(ARCH_)ASF) $(ASF)
   $(ARCH_)CF            := $($(ARCH_)CF) $(CF)
   $(ARCH_)CXXF          := $($(ARCH_)CXXF) $(CXXF)
   $(ARCH_)LF            := $($(ARCH_)LF) $(LF)
@@ -254,10 +263,12 @@ define EVAL_BEGIN_ARCH_BUILD
   OBJCOPY               := $$($(1)_PREFIX)objcopy
   OBJDUMP               := $$($(1)_PREFIX)objdump
 
+  # Artifact parths
   BUILD_DIR             := $$($(1)_BUILD_DIR)
-  OBJ_DIR               := $$($(1)_BUILD_DIR)/obj
-  LIB_DIR               := $$($(1)_BUILD_DIR)/lib
-  BIN_DIR               := $$($(1)_BUILD_DIR)/bin
+  # Note: These used to be separate paths, they still can be
+  OBJ_DIR               := $$($(1)_BUILD_DIR)
+  LIB_DIR               := $$($(1)_BUILD_DIR)
+  BIN_DIR               := $$($(1)_BUILD_DIR)
 
   ARCH                  := $(1)
 
@@ -266,20 +277,28 @@ define EVAL_BEGIN_ARCH_BUILD
   LAST_TARGET_          :=
 
   # Locally created dependencies
+  LDEP_ASF_             :=
   LDEP_CF_              :=
   LDEP_CXXF_            :=
   LDEP_LF_              :=
   LDEP_LL_              :=
+  LDEP_ASIF_            :=
+  LDEP_CIF_             :=
+  LDEP_CXXIF_           :=
   LDEP_LINK_            :=
 
   # Local (hidden) flags
   $$(eval $$(EVAL_CLEAR_LOCAL_PARAMS))
 
   # Imported dependencies
+  DEPS_ASF_             :=
   DEPS_CF_              :=
   DEPS_CXXF_            :=
   DEPS_LF_              :=
   DEPS_LL_              :=
+  DEPS_ASIF_            :=
+  DEPS_CIF_             :=
+  DEPS_CXXIF_           :=
   DEPS_LINK_            :=
   DEPS_BUILD_           :=
 
@@ -315,20 +334,28 @@ define EVAL_END_ARCH_BUILD
   LAST_TARGET_          :=
 
   # Locally created dependencies
+  LDEP_ASF_             :=
   LDEP_CF_              :=
   LDEP_CXXF_            :=
   LDEP_LF_              :=
   LDEP_LL_              :=
+  LDEP_ASIF_            :=
+  LDEP_CIF_             :=
+  LDEP_CXXIF_           :=
   LDEP_LINK_            :=
 
   # Local (hidden) flags
   $$(eval $$(EVAL_CLEAR_LOCAL_PARAMS))
 
   # Imported dependencies
+  DEPS_ASF_             :=
   DEPS_CF_              :=
   DEPS_CXXF_            :=
   DEPS_LF_              :=
   DEPS_LL_              :=
+  DEPS_ASIF_            :=
+  DEPS_CIF_             :=
+  DEPS_CXXIF_           :=
   DEPS_LINK_            :=
   DEPS_BUILD_           :=
 
@@ -405,12 +432,12 @@ define EVAL_BUILD_SOURCE
 
   _SRC_                 := $$(filter %.cpp,$(1))
   ifneq ($$(_SRC_),)
-    $$(foreach f,$$(_SRC_),$$(eval $$(call EVAL_CPP_RULE,$$(f),$$(call CPP_SRC_TO_OBJ,$$(f)))))
+    $$(foreach f,$$(_SRC_),$$(eval $$(call EVAL_CXX_RULE,$$(f),$$(call CPP_SRC_TO_OBJ,$$(f)))))
   endif
 
   _SRC_                 := $$(filter %.cc,$(1))
   ifneq ($$(_SRC_),)
-    $$(foreach f,$$(_SRC_),$$(eval $$(call EVAL_CPP_RULE,$$(f),$$(call CC_SRC_TO_OBJ,$$(f)))))
+    $$(foreach f,$$(_SRC_),$$(eval $$(call EVAL_CXX_RULE,$$(f),$$(call CC_SRC_TO_OBJ,$$(f)))))
   endif
 
   _SRC_                 := $$(filter %.S,$(1))
@@ -432,7 +459,7 @@ define EVAL_CXX_LINK_RULE
 LAST_TARGET_            := $(BIN_DIR)/$(1)
 
 $(BIN_DIR)/$(1)_CXX_LINK_CMD  = \
-    $(CXX) $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
+    $(CXX) \
     $$($(ARCH)CXXF) $(CXXF) $(DEPS_CXXF_) $(LDEP_CXXF_) \
     $$($(ARCH)LF) $(LF) $(DEPS_LF_) $(LDEP_LF_) \
     -o $$@ $$(filter %.o,$$^) \
@@ -450,7 +477,8 @@ define EVAL_C_LINK_RULE
 LAST_TARGET_            := $(BIN_DIR)/$(1)
 
 $(BIN_DIR)/$(1)_CC_LINK_CMD  = \
-    $(CC) $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
+    $(CC) \
+    $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
     $$($(ARCH)LF) $(LF) $(DEPS_LF_) $(LDEP_LF_) \
     -o $$@ $$(filter %.o,$$^) \
     $$($(ARCH)LL) $(LL) $(DEPS_LL_) $(LDEP_LL_)
@@ -469,7 +497,9 @@ OBJS                    := $$(OBJS) $(2)
 LAST_TARGET_            := $$(LAST_TARGET_) $(2)
 
 $(2)_CC_CMD             = \
-    $(CC) $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
+    $(CC) \
+    $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
+    $(LDEP_CIF_) $(DEPS_CIF_) \
     -MMD -MP -MT '$(2)' -MF '$(2).d' \
     -o $$@ -c $$<
 
@@ -486,13 +516,14 @@ endef
 
 # (1) - Source filename
 # (2) - Object filename
-define EVAL_CPP_RULE
+define EVAL_CXX_RULE
 OBJS                    := $$(OBJS) $(2)
 LAST_TARGET_            := $$(LAST_TARGET_) $(2)
 
 $(2)_CXX_CMD            = \
-    $(CXX) $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
+    $(CXX) \
     $$($(ARCH)CXXF) $(CXXF) $(DEPS_CXXF_) $(LDEP_CXXF_) \
+    $(LDEP_CIF_) $(DEPS_CIF_) $(LDEP_CXXIF_) $(DEPS_CXXIF_) \
     -MMD -MP -MT '$(2)' -MF '$(2).d' \
     -o $$@ -c $$<
 
@@ -514,7 +545,9 @@ OBJS                    := $$(OBJS) $(2)
 LAST_TARGET_            := $$(LAST_TARGET_) $(2)
 
 $(2)_ASM_CMD            = \
-    $(CC) $$($(ARCH)CF) $(CF) $(DEPS_CF_) $(LDEP_CF_) \
+    $(CC) \
+    $$($(ARCH)ASF) $(ASF) $(DEPS_ASF_) $(LDEP_ASF_) \
+    $(LDEP_ASIF_) $(DEPS_ASIF_) \
     -o $$@ -c $$<
 
 _M_BUILD_DEP_$(2)       = $(value DEPS_BUILD_)
@@ -546,11 +579,16 @@ endef
 define EVAL_EXPORT_SHALLOW_DEPS
   EXPORTED_DEP_NAMES_       := $$(EXPORTED_DEP_NAMES_) $(ARCH)_$(1)
 
+  $(ARCH)DEPS_BUILD_$(1)    := $$(value DEPS_BUILD_)
+  $(ARCH)DEPS_LINK_$(1)     := $$(value LDEP_LINK_)
+
+  $(ARCH)DEPS_ASF_$(1)      := $$(value LDEP_ASF_)
   $(ARCH)DEPS_CF_$(1)       := $$(value LDEP_CF_)
   $(ARCH)DEPS_CXXF_$(1)     := $$(value LDEP_CXXF_)
 
-  $(ARCH)DEPS_BUILD_$(1)    := $$(value DEPS_BUILD_)
-  $(ARCH)DEPS_LINK_$(1)     := $$(value LDEP_LINK_)
+  $(ARCH)DEPS_ASIF_$(1)     := $$(value LDEP_ASIF_)
+  $(ARCH)DEPS_CIF_$(1)      := $$(value LDEP_CIF_)
+  $(ARCH)DEPS_CXXIF_$(1)    := $$(value LDEP_CXXIF_)
 
   ifneq ($(LIBS_BASENAME),)
     $(ARCH)DEPS_LF_$(1)     := $$(value LDEP_LF_) -L$(LIB_DIR)
@@ -568,8 +606,15 @@ define EVAL_IMPORT_DEP
 
   DEPS_BUILD_           := $$(value DEPS_BUILD_) $$$$($(ARCH)DEPS_BUILD_$(1))
   DEPS_LINK_            := $$(value DEPS_LINK_) $$$$($(ARCH)DEPS_LINK_$(1))
+
+  DEPS_ASF_             := $$(value DEPS_ASF_) $$$$($(ARCH)DEPS_ASF_$(1))
   DEPS_CF_              := $$(value DEPS_CF_) $$$$($(ARCH)DEPS_CF_$(1))
   DEPS_CXXF_            := $$(value DEPS_CXXF_) $$$$($(ARCH)DEPS_CXXF_$(1))
+
+  DEPS_ASIF_            := $$(value DEPS_ASIF_) $$$$($(ARCH)DEPS_ASIF_$(1))
+  DEPS_CIF_             := $$(value DEPS_CIF_) $$$$($(ARCH)DEPS_CIF_$(1))
+  DEPS_CXXIF_           := $$(value DEPS_CXXIF_) $$$$($(ARCH)DEPS_CXXIF_$(1))
+
   DEPS_LF_              := $$(value DEPS_LF_) $$$$($(ARCH)DEPS_LF_$(1))
   DEPS_LL_              := $$(value DEPS_LL_) $$$$($(ARCH)DEPS_LL_$(1))
 endef
@@ -585,6 +630,7 @@ endef
 define EVAL_BEGIN_APPEND_ARCH_FLAGS
   ARCH                  := $(1)
 
+  ASF                   :=
   CF                    :=
   CXXF                  :=
   LF                    :=
@@ -593,6 +639,7 @@ endef
 
 
 define EVAL_END_APPEND_ARCH_FLAGS
+  $(ARCH)ASF            := $$($(ARCH)ASF) $$(ASF)
   $(ARCH)CF             := $$($(ARCH)CF) $$(CF)
   $(ARCH)CXXF           := $$($(ARCH)CXXF) $$(CXXF)
   $(ARCH)LF             := $$($(ARCH)LF) $$(LF)
@@ -600,6 +647,7 @@ define EVAL_END_APPEND_ARCH_FLAGS
 
   ARCH                  :=
 
+  ASF                   :=
   CF                    :=
   CXXF                  :=
   LF                    :=
@@ -608,18 +656,23 @@ endef
 
 
 # $(1) - Include path
+define EVAL_ADD_AS_INCLUDE
+  LDEP_ASIF_           := $$(value LDEP_ASIF_) $$(patsubst %,-I%,$(1))
+endef
+
+# $(1) - Include path
 define EVAL_ADD_C_INCLUDE
-  LDEP_CF_              := $$(value LDEP_CF_) $$(patsubst %,-I%,$(1))
+  LDEP_CIF_             := $$(value LDEP_CIF_) $$(patsubst %,-I%,$(1))
 endef
 
 # $(1) - Include path
 define EVAL_ADD_CXX_INCLUDE
-  LDEP_CXXF_            := $$(value LDEP_CXXF_) $$(patsubst %,-I%,$(1))
+  LDEP_CXXIF_           := $$(value LDEP_CXXIF_) $$(patsubst %,-I%,$(1))
 endef
 
-# $(1) - System include path
-define EVAL_ADD_SYS_INCLUDE
-  LDEP_CF_              := $$(value LDEP_CF_) $$(patsubst %,-isystem %,$(1))
+# $(1) - Flags
+define EVAL_ADD_ASF_FLAG
+  LDEP_ASF_             := $$(value LDEP_ASF_) $(1)
 endef
 
 # $(1) - Flags
