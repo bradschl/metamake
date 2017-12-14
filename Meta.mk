@@ -266,9 +266,9 @@ define EVAL_BEGIN_ARCH_BUILD
   # Artifact parths
   BUILD_DIR             := $$($(1)_BUILD_DIR)
   # Note: These used to be separate paths, they still can be
-  OBJ_DIR               := $$($(1)_BUILD_DIR)
-  LIB_DIR               := $$($(1)_BUILD_DIR)
-  BIN_DIR               := $$($(1)_BUILD_DIR)
+  OBJ_DIR               := $$($(1)_BUILD_DIR)/obj
+  LIB_DIR               := $$($(1)_BUILD_DIR)/lib
+  BIN_DIR               := $$($(1)_BUILD_DIR)/bin
 
   ARCH                  := $(1)
 
