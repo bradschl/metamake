@@ -36,7 +36,7 @@
 # API breaking version
 METAMAKE_MAJOR_VERSION  := 3
 # Bug fix version within the API
-METAMAKE_MINOR_VERSION  := 0
+METAMAKE_MINOR_VERSION  := 1
 
 
 # ------------------------------------------------------------ BUILD CONSTRUCTS
