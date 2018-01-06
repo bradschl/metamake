@@ -59,7 +59,7 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
   $(call BUILD_SOURCE,          TRACE_1_targetSrc_cxx.cpp)
   $(call APPEND_TARGET_TO_VAR,  TRACE_1_targetObj_cxx) # Trace source build step
 
-  $(call MAKE_LIRARY,           TRACE_1_library)
+  $(call MAKE_LIBRARY,          TRACE_1_library)
   $(call EXPORT_SHALLOW_DEPS,   TRACE_1_targetDep)
 $(call END_ARCH_BUILD)
 
@@ -82,7 +82,7 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
   $(call BUILD_SOURCE,          TRACE_2_targetSrc_cxx.cpp)
   $(call APPEND_TARGET_TO_VAR,  TRACE_2_targetObj_cxx) # Trace source build step
 
-  $(call MAKE_LIRARY,           TRACE_2_library)
+  $(call MAKE_LIBRARY,          TRACE_2_library)
   $(call EXPORT_SHALLOW_DEPS,   TRACE_2_targetDep)
 $(call END_ARCH_BUILD)
 

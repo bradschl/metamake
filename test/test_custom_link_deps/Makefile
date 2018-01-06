@@ -52,7 +52,7 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
 
   $(call BUILD_SOURCE,          TRACE_1_targetSrc.cpp)
 
-  $(call MAKE_LIRARY,           TRACE_1_library)
+  $(call MAKE_LIBRARY,          TRACE_1_library)
   $(call APPEND_TARGET_TO_VAR,  TRACE_1_targetLib) # Trace library link step
 
   $(call EXPORT_SHALLOW_DEPS,   TRACE_1_targetDep)

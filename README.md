@@ -255,11 +255,11 @@ $(call BEGIN_ARCH_BUILD, ARM_CM0)
   LF := -nostdlib -T myexec.ld
   LL := -lgcc
   $(call CXX_LINK,          myexec.elf)
-$(call END_UNIVERSAL_BUILD)
+$(call END_ARCH_BUILD)
 ```
 
 #### Building a Static Library
-Static libraries are created with the ```MAKE_LIRARY``` call. This call takes a single parameter for the library base-name to build. Internally, every ```BUILD_SOURCE``` call appends a list of generated objects for the build construct. When then ```MAKE_LIBRARY``` call is made, it will create a static library out of all those objects.
+Static libraries are created with the ```MAKE_LIBRARY``` call. This call takes a single parameter for the library base-name to build. Internally, every ```BUILD_SOURCE``` call appends a list of generated objects for the build construct. When then ```MAKE_LIBRARY``` call is made, it will create a static library out of all those objects.
 ```Makefile
 $(call BEGIN_UNIVERSAL_BUILD)
   $(call ADD_CXX_INCLUDE, include)
@@ -392,14 +392,14 @@ $(call BEGIN_ARCH_BUILD, ARM_CM4)
   $(call ADD_CXX_INCLUDE,     $(d)/include)
   $(call ADD_CXXF_FLAG,       -DSPECIAL_ARM_CM4_BUILD_FLAG)
   $(call BUILD_SOURCE,        $(MY_SRC))
-  $(call MAKE_LIRARY,         myLib)
+  $(call MAKE_LIBRARY,        myLib)
   $(call EXPORT_SHALLOW_DEPS, myLib)
 $(call END_ARCH_BUILD)
 
 $(call BEGIN_UNIVERSAL_BUILD)
   $(call ADD_CXX_INCLUDE,     $(d)/include)
   $(call BUILD_SOURCE,        $(MY_SRC))
-  $(call MAKE_LIRARY,         myLib)
+  $(call MAKE_LIBRARY,        myLib)
   $(call EXPORT_SHALLOW_DEPS, myLib)
 $(call END_UNIVERSAL_BUILD)
 ```
@@ -409,7 +409,7 @@ This can be useful as well for unit testing code which expects to build against 
 $(call BEGIN_ARCH_BUILD, ARM_CM4)
   $(call ADD_C_INCLUDE,       $(d)/include)
   $(call BUILD_SOURCE,        $(STM32F4_DRIVERS_SRC))
-  $(call MAKE_LIRARY,         stm32f4_drivers)
+  $(call MAKE_LIBRARY,        stm32f4_drivers)
   $(call EXPORT_SHALLOW_DEPS, stm32f4_drivers)
 $(call END_ARCH_BUILD)
 
@@ -463,7 +463,7 @@ EXEC_NAME          := myexec.elf
 $(call BEGIN_ARCH_BUILD, ARM_CM4)
   $(call ADD_CXX_INCLUDE,     $(INCLUDE_DIR))
   $(call BUILD_SOURCE,        $(LIB_SOURCE))
-  $(call MAKE_LIRARY,         $(LIB_NAME))
+  $(call MAKE_LIBRARY,        $(LIB_NAME))
   $(call EXPORT_SHALLOW_DEPS, $(LIB_NAME))
 
   LF               := -T ldscripts/myexec.ld
@@ -521,7 +521,7 @@ Currently, there is only shallow dependency exporting, which is mostly due to re
 $(call BEGIN_UNIVERSAL_BUILD)
   $(call ADD_CXX_INCLUDE,       mylib_1/include)
   $(call BUILD_SOURCE,          $(MY_LIB_1_SRC))
-  $(call MAKE_LIRARY,           mylib_1)
+  $(call MAKE_LIBRARY,          mylib_1)
   $(call EXPORT_SHALLOW_DEPS,   mylib_1)
 $(call END_UNIVERSAL_BUILD)
 
@@ -529,7 +529,7 @@ $(call BEGIN_UNIVERSAL_BUILD)
   $(call IMPORT_DEPS,           mylib_1)
   $(call ADD_CXX_INCLUDE,       mylib_2/include)
   $(call BUILD_SOURCE,          $(MY_LIB_2_SRC))
-  $(call MAKE_LIRARY,           mylib_2)
+  $(call MAKE_LIBRARY,          mylib_2)
   $(call EXPORT_SHALLOW_DEPS,   mylib_2)
 $(call END_UNIVERSAL_BUILD)
 
@@ -570,7 +570,7 @@ $(call BEGIN_UNIVERSAL_BUILD)
   # Build minimal library features
   $(call ADD_CXX_INCLUDE,     include/minimal)
   $(call BUILD_SOURCE,        $(MINIMAL_SRC))
-  $(call MAKE_LIRARY,         mylib_minimal)
+  $(call MAKE_LIBRARY,        mylib_minimal)
   $(call EXPORT_SHALLOW_DEPS, mylib_minimal)
 
   # Build in extra features, inheriting all objects generated in
@@ -578,7 +578,7 @@ $(call BEGIN_UNIVERSAL_BUILD)
   # Don't do this!
   $(call ADD_CXX_INCLUDE,     include/newFeature)
   $(call BUILD_SOURCE,        $(FEATURE_Y_SRC))
-  $(call MAKE_LIRARY,         mylib_full)
+  $(call MAKE_LIBRARY,        mylib_full)
   $(call EXPORT_SHALLOW_DEPS, mylib_full)
 $(call END_UNIVERSAL_BUILD)
 ```
@@ -592,7 +592,7 @@ MY_SRC := foo.cpp bar.cpp
 $(call BEGIN_UNIVERSAL_BUILD)
   $(call ADD_CXX_INCLUDE,     include)
   $(call BUILD_SOURCE,        $(MY_SRC))
-  $(call MAKE_LIRARY,         mylib_1)
+  $(call MAKE_LIBRARY,        mylib_1)
 $(call END_UNIVERSAL_BUILD)
 
 # Don't do this!
@@ -600,7 +600,7 @@ $(call BEGIN_UNIVERSAL_BUILD)
   $(call ADD_CXX_INCLUDE,     include)
   $(call ADD_CXXF_FLAG,       -DENABLE_COOL_FEATURE)
   $(call BUILD_SOURCE,        $(MY_SRC))
-  $(call MAKE_LIRARY,         mylib_2)
+  $(call MAKE_LIBRARY,        mylib_2)
 $(call END_UNIVERSAL_BUILD)
 ```
 

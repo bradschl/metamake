@@ -127,7 +127,7 @@ CC_LINK                 = \
                          $$$$(eval $$$$(call EVAL_C_LINK_RULE,$$$$(strip $$(1)))))
 
 # $(1) - Library base name
-MAKE_LIRARY             = \
+MAKE_LIBRARY            = \
     $(eval BUILD_CMD_ := $$(value BUILD_CMD_) \
                          $$$$(eval $$$$(call EVAL_AR_RULE,$$$$(strip $$(1)),$$$$(call LIBNAME_TO_LIBA,$$(1)))))
 

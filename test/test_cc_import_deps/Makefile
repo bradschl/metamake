@@ -55,7 +55,7 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
   $(call BUILD_SOURCE,          TRACE_3_targetSrc.c)
   $(call APPEND_TARGET_TO_VAR,  TRACE_3_targetObj) # Trace source build step
 
-  $(call MAKE_LIRARY,           TRACE_3_library)
+  $(call MAKE_LIBRARY,          TRACE_3_library)
   $(call APPEND_TARGET_TO_VAR,  TRACE_3_targetLib) # Trace library build step
 
   $(call EXPORT_SHALLOW_DEPS,   TRACE_3_targetDep)
@@ -73,7 +73,7 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
   $(call BUILD_SOURCE,          TRACE_2_targetSrc.c)
   $(call APPEND_TARGET_TO_VAR,  TRACE_2_targetObj) # Trace source build step
 
-  $(call MAKE_LIRARY,           TRACE_2_library)
+  $(call MAKE_LIBRARY,          TRACE_2_library)
   $(call APPEND_TARGET_TO_VAR,  TRACE_2_targetLib) # Trace library build step
 
   $(call EXPORT_SHALLOW_DEPS,   TRACE_2_targetDep)
@@ -90,7 +90,7 @@ $(call BEGIN_ARCH_BUILD, TRACE_ARCH)
   $(call BUILD_SOURCE,          TRACE_1_targetSrc.c)
   $(call APPEND_TARGET_TO_VAR,  TRACE_1_targetObj) # Trace source build step
 
-  $(call MAKE_LIRARY,           TRACE_1_library)
+  $(call MAKE_LIBRARY,          TRACE_1_library)
   $(call APPEND_TARGET_TO_VAR,  TRACE_1_targetLib) # Trace library build step
 
   $(call EXPORT_SHALLOW_DEPS,   TRACE_1_targetDep)
