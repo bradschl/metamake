@@ -13,7 +13,7 @@ INCLUDE_$(d)            := $(d)/include
 $(call BEGIN_UNIVERSAL_BUILD)
   $(call ADD_C_INCLUDE,         $(INCLUDE_$(d)))      # Add local include path
   $(call BUILD_SOURCE,          $(SRC_$(d)))          # Build objects
-  $(call MAKE_LIRARY,           $(LIB_NAME_$(d)))     # Make objects from previous steps into a lib
+  $(call MAKE_LIBRARY,          $(LIB_NAME_$(d)))     # Make objects from previous steps into a lib
   $(call EXPORT_SHALLOW_DEPS,   $(DEP_NAME_$(d)))     # Export the dependencies for building against this lib
 $(call END_UNIVERSAL_BUILD)
 

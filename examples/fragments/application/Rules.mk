@@ -28,9 +28,11 @@ $(call BEGIN_ARCH_BUILD, ARM_CM4)
   $(call BUILD_SOURCE,      $(SRC_ARM_$(d)))      # Build ARM only objects
 
   # ARM build requires an extra linker flag to build
-  LF                        := -T ldscripts/application.ld
+  LF                        := \
+    -T ldscripts/application.ld \
+    -Wl,-Map,$(BIN_DIR)/application.map
   $(call CXX_LINK,          $(TARGET_NAME_$(d)).elf)
-  
+
   # The output elf file is not the final target, a custom step is needed for that
   $(call APPEND_TARGET_TO_VAR, OUTPUT_ELF_NAME_$(d))
 $(call END_ARCH_BUILD)

@@ -24,25 +24,28 @@ endif
 
 
 # --------------------------------------------------------- BUILD ARCHITECTURES
+CM4_ALL_FLAGS           := \
+    -O2 -g3 -Wall \
+    -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp \
+    -DCORE_M4 \
+    --specs=nano.specs
 
 $(call BEGIN_DEFINE_ARCH,  ARM_CM4,	    build/arm_cm4)
   PREFIX                := arm-none-eabi-
-  CF                    := -O2 -g3 -Wall -fmessage-length=0 \
-                           -ffunction-sections -fdata-sections -fno-builtin \
-                           -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=softfp \
-                           -mthumb -fsingle-precision-constant -DCORE_M4
-  CXXF                  := -fno-exceptions -fno-rtti
+  ASF                   := $(CM4_ALL_FLAGS)
+  CF                    := $(CM4_ALL_FLAGS) -std=c99
+  CXXF                  := $(CM4_ALL_FLAGS) -std=c++14 -fno-exceptions -fno-rtti
   LF                    :=
   LL                    :=
 $(call END_DEFINE_ARCH)
 
 
+HOST_ALL_FLAGS          := -O0 -g3 -Wall -Wextra
+
 $(call BEGIN_DEFINE_ARCH,  HOST,        build/host)
   PREFIX                :=
-  CF                    := -O2 -g3 -Wall -Wextra -fmessage-length=0 \
-                           -ffunction-sections -fdata-sections \
-                           -fsingle-precision-constant
-  CXXF                  := -fno-rtti
+  CF                    := $(HOST_ALL_FLAGS)
+  CXXF                  := $(HOST_ALL_FLAGS) -fno-rtti
   LF                    :=
   LL                    :=
 $(call END_DEFINE_ARCH)
@@ -55,9 +58,6 @@ dir         := application
 include $(dir)/Rules.mk
 
 dir         := libbar
-include $(dir)/Rules.mk
-
-dir 		:= third-party
 include $(dir)/Rules.mk
 
 

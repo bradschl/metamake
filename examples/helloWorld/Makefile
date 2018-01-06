@@ -23,12 +23,12 @@ include ../../Meta.mk
 
 $(call BEGIN_DEFINE_ARCH, HOST_RELEASE, build/host/release)
   PREFIX        :=
-  CF            := -O3
+  CXXF          := -O3
 $(call END_DEFINE_ARCH)
 
 $(call BEGIN_DEFINE_ARCH, HOST_DEBUG, build/host/debug)
   PREFIX        :=
-  CF            := -O0 -g3
+  CXXF          := -O0 -g3
 $(call END_DEFINE_ARCH)
 
 
